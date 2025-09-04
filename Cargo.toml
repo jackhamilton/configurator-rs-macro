@@ -2,6 +2,12 @@
 name = "freezable-macros"
 version = "0.1.0"
 edition = "2024"
+license = "Unlicense"
+authors = ["Jack Hamilton jackham800@gmail.com"]
+keywords = []
+categories = ["Rust patterns"]
+repository = "https://github.com/jackhamilton/freezable-macros"
+description = "Support proc macro for the freezable package"
 
 [lib]
 proc-macro = true
