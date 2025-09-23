@@ -42,7 +42,7 @@ pub fn freezable_impl(_args: TokenStream, input: TokenStream) -> TokenStream {
                         struct #generics #ident #generics #where_clause {
                             #(#field_stream),*
                         }
-                        impl Freezable for #ident {}
+                        impl freezable_trait::Freezable for #ident {}
                         #(#field_inits)*
                     }
                 },
