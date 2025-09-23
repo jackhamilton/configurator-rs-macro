@@ -37,7 +37,8 @@ pub fn freezable_impl(_args: TokenStream, input: TokenStream) -> TokenStream {
                         }
                     }).collect();
                     quote!{
-                        #[derive(freezable_trait::Serialize, freezable_trait::Deserialize)]
+                        #[derive(freezable_trait::_serde::Serialize, freezable_trait::_serde::Deserialize)]
+                        #[serde(crate = "freezable_trait::_serde")]
                         struct #generics #ident #generics #where_clause {
                             #(#field_stream),*
                         }
