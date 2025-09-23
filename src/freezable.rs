@@ -29,7 +29,7 @@ pub fn freezable_impl(_args: TokenStream, input: TokenStream) -> TokenStream {
                             fn #func_name() -> #field_type { #ident::default().#name }
                         };
                         field_inits.push(field_func);
-                        let func_name_str = format!("{}", func_name);
+                        let func_name_str = format!("{func_name}");
                         let literal_func_name = syn::LitStr::new(&func_name_str, func_name.span());
                         quote!{
                             #[serde(default = #literal_func_name)]
@@ -37,7 +37,7 @@ pub fn freezable_impl(_args: TokenStream, input: TokenStream) -> TokenStream {
                         }
                     }).collect();
                     quote!{
-                        #[derive(Serialize, Deserialize)]
+                        #[derive(freezable_trait::Serialize, freezable_trait::Deserialize)]
                         struct #generics #ident #generics #where_clause {
                             #(#field_stream),*
                         }

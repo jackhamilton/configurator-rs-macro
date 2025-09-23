@@ -1,6 +1,6 @@
 [package]
 name = "freezable-macros"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 license = "Unlicense"
 authors = ["Jack Hamilton jackham800@gmail.com"]
