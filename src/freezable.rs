@@ -36,13 +36,16 @@ pub fn freezable_impl(_args: TokenStream, input: TokenStream) -> TokenStream {
                             #field
                         }
                     }).collect();
+                    let last_field = quote! {
+                        #[serde(flatten)]
+                        _unknown_fields: freezable_trait::_HashMap<String, freezable_trait::_serde_json::Value>
+                    };
                     quote!{
-                        #[derive(freezable_trait::_serde::Serialize, freezable_trait::_serde::Deserialize)]
+                        #[derive(freezable_trait::_serde::Serialize, freezable_trait::_serde::Deserialize, Clone)]
                         #[serde(crate = "freezable_trait::_serde")]
                         struct #generics #ident #generics #where_clause {
-                            #(#field_stream),*
-                            #[serde(flatten)]
-                            _unknown_fields: HashMap<String, freezable_trait::_serde_json::Value>
+                            #(#field_stream),*,
+                            #last_field
                         }
                         #(#field_inits)*
                     }
