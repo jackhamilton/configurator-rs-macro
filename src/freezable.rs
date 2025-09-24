@@ -41,6 +41,8 @@ pub fn freezable_impl(_args: TokenStream, input: TokenStream) -> TokenStream {
                         #[serde(crate = "freezable_trait::_serde")]
                         struct #generics #ident #generics #where_clause {
                             #(#field_stream),*
+                            #[serde(flatten)]
+                            _unknown_fields: HashMap<String, freezable_trait::_serde_json::Value>
                         }
                         #(#field_inits)*
                     }
