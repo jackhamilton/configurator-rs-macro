@@ -1,13 +1,13 @@
 [package]
-name = "freezable-macros"
-version = "0.3.0"
+name = "cli-builder-macros"
+version = "0.0.0"
 edition = "2024"
 license = "Unlicense"
 authors = ["Jack Hamilton jackham800@gmail.com"]
 keywords = []
 categories = []
-repository = "https://github.com/jackhamilton/freezable-macros"
-description = "Support proc macro for the freezable package"
+repository = ""
+description = ""
 
 [lib]
 proc-macro = true

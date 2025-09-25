@@ -3,8 +3,8 @@
 version = 4
 
 [[package]]
-name = "freezable-macros"
-version = "0.3.0"
+name = "cli-builder-macros"
+version = "0.0.0"
 dependencies = [
  "proc-macro2",
  "quote",

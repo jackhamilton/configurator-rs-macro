@@ -5,8 +5,8 @@ use syn::{
     parse_macro_input, ExprArray, Ident, Token,
 };
 
-/// cli_runtime!( [ CLICommand { ... }, CLICommand { ... } ] )
-/// cli_runtime!( default = help; [ CLICommand { ... }, ... ] )
+/// cli_runtime!( [ Command { ... }, Command { ... } ] )
+/// cli_runtime!( default = help; [ Command { ... }, ... ] )
 struct MacroInput {
     default_ident: Option<Ident>,
     array: ExprArray,
@@ -36,7 +36,6 @@ impl Parse for MacroInput {
             None
         };
 
-        // Now expect `[ ... ]` as an array expression
         let array: ExprArray = input.parse()?;
         Ok(Self { default_ident, array })
     }
@@ -45,23 +44,22 @@ impl Parse for MacroInput {
 pub fn cli_builder_impl(input: TokenStream) -> TokenStream {
     let MacroInput { default_ident, array } = parse_macro_input!(input as MacroInput);
 
-    let elems = array.elems; // Punctuated<Expr, Comma>
+    let elems = array.elems.iter();
     let default_ident = default_ident
         .map(|id| quote! { Some(#id) })
         .unwrap_or_else(|| quote! { Some(help) });
 
-    // We define the CLICommand and Runtime, then plug the user-provided entries directly.
     let expanded = quote! {
         #[derive(Clone)]
-        pub struct CLICommand {
+        pub struct Command {
             pub short_flag: char,
-            pub long_flag: String,
+            pub long_flag: &'static str,
             pub command: fn(),
-            pub description: String,
+            pub description: &'static str,
         }
 
         pub struct Runtime {
-            pub commands: ::std::vec::Vec<CLICommand>,
+            pub commands: ::std::vec::Vec<Command>,
             pub default_command: ::std::option::Option<fn()>,
         }
 
@@ -69,6 +67,18 @@ pub fn cli_builder_impl(input: TokenStream) -> TokenStream {
             pub fn new() -> Self {
                 Self {
                     commands: ::std::vec![
+                        Command {
+                            short_flag: 'h',
+                            long_flag: "help",
+                            command: help,
+                            description: "Explains available commands."
+                        },
+                        Command {
+                            short_flag: 'v',
+                            long_flag: "version",
+                            command: version,
+                            description: "Outputs tool version."
+                        },
                         #(#elems ,)*
                     ],
                     default_command: #default_ident,
@@ -82,7 +92,7 @@ pub fn cli_builder_impl(input: TokenStream) -> TokenStream {
                             (command.command)()
                         }
                     } else if let Some(short_arg) = arg.strip_prefix("-")
-                        && command.short_flag.to_string() == short_arg {
+                    && command.short_flag.to_string() == short_arg {
                         (command.command)()
                     }
                 }
@@ -100,6 +110,38 @@ pub fn cli_builder_impl(input: TokenStream) -> TokenStream {
                     message.push_str(&helpmsg);
                 }
                 message
+            }
+        }
+
+        fn help() {
+            // I'm not losing sleep over the fact that this will likely be invoked from an existing runtime
+            // object. Mind, I am losing sleep, just for different reasons.
+            let runtime = Runtime::new();
+            println!("{}", runtime.gen_help());
+            std::process::exit(0);
+        }
+
+        fn version() {
+            println!("{} version {} by Jack Hamilton", PRODUCT_NAME, env!("CARGO_PKG_VERSION"));
+            std::process::exit(0);
+        }
+
+        fn main() {
+            let runtime = Runtime::new();
+            let args: Vec<String> = env::args().collect();
+            // First arg is junk
+            if args.is_empty() || args.len() == 1 {
+                if let Some(command) = runtime.default_command {
+                    command()
+                } else {
+                    help()
+                }
+            } else if args.len() > 2 {
+                println!("Too many arguments!");
+                help()
+            } else {
+                let arg = args[1].clone();
+                runtime.run(arg);
             }
         }
     };
