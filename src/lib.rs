@@ -1,10 +1,10 @@
 extern crate proc_macro;
 use proc_macro::TokenStream;
-use crate::freezable::freezable_impl;
+use crate::cli_builder::cli_builder_impl;
 
-mod freezable;
+mod cli_builder;
 
-#[proc_macro_attribute]
-pub fn freezable(args: TokenStream, input: TokenStream) -> TokenStream {
-    freezable_impl(args, input)
+#[proc_macro]
+pub fn cli_builder(input: TokenStream) -> TokenStream {
+    cli_builder_impl(input)
 }
