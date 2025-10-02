@@ -41,7 +41,7 @@ impl Parse for MacroInput {
     }
 }
 
-pub fn cli_builder_impl(input: TokenStream) -> TokenStream {
+pub fn config_builder_impl(input: TokenStream) -> TokenStream {
     let MacroInput { default_ident, array } = parse_macro_input!(input as MacroInput);
 
     let elems = array.elems.iter();
