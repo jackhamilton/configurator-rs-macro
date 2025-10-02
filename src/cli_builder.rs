@@ -122,7 +122,7 @@ pub fn cli_builder_impl(input: TokenStream) -> TokenStream {
         }
 
         fn version() {
-            println!("{} version {} by Jack Hamilton", PRODUCT_NAME, env!("CARGO_PKG_VERSION"));
+            println!("{} version {} by Jack Hamilton", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"));
             std::process::exit(0);
         }
 
