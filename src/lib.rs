@@ -1,4 +1,5 @@
 extern crate proc_macro;
+use crate::config_builder::config_builder_impl;
 use proc_macro::TokenStream;
 
 mod config_builder;
