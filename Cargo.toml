@@ -1,13 +1,13 @@
 [package]
 name = "configurator-macros"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2024"
 license = "Unlicense"
 authors = ["Jack Hamilton jackham800@gmail.com"]
 keywords = []
 categories = []
-repository = ""
-description = ""
+repository = "https://github.com/jackhamilton/configurator-rs-macro"
+description = "Support proc macro for toml-configurator"
 
 [lib]
 proc-macro = true
