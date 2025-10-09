@@ -49,7 +49,7 @@ pub fn config_builder_impl(input: TokenStream) -> TokenStream {
     let field_defaults: Vec<Expr> = fields.iter().map(|f| f.default_expr.clone()).collect();
 
     let expanded = quote! {
-        #[freezable]
+        #[freezable_trait::freezable]
         struct #struct_name {
             #( #field_idents: #field_types, )*
         }
