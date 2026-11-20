@@ -111,9 +111,9 @@ fn field_declaration(field: &Field) -> proc_macro2::TokenStream {
     } = field;
     let default = default_expr
         .as_ref()
-        .map(|expr| quote!(= #expr))
+        .map(|expr| quote!(#[default(#expr)]))
         .unwrap_or_default();
-    quote!(#name: #ty #default,)
+    quote!(#default #name: #ty,)
 }
 
 fn generate_section(
