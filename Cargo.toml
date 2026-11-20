@@ -13,6 +13,6 @@ description = "Support proc macro for toml-configurator"
 proc-macro = true
 
 [dependencies]
-proc-macro2 = "1.0.101"
-quote = "1.0.40"
-syn = { version = "2.0.106", features = ["full"] }
+proc-macro2 = "1.0.107"
+quote = "1.0.47"
+syn = { version = "3.0.10", features = ["full"] }

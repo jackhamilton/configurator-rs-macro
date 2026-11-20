@@ -11,18 +11,26 @@ struct Field {
     name: Ident,
     _colon: Token![:],
     ty: Type,
-    _eq: Token![=],
-    default_expr: Expr,
+    default_expr: Option<Expr>,
 }
 
 impl Parse for Field {
     fn parse(input: ParseStream<'_>) -> Result<Self> {
+        let name = input.parse()?;
+        let colon = input.parse()?;
+        let ty = input.parse()?;
+        let default_expr = if input.peek(Token![=]) {
+            input.parse::<Token![=]>()?;
+            Some(input.parse()?)
+        } else {
+            None
+        };
+
         Ok(Field {
-            name: input.parse()?,
-            _colon: input.parse()?,
-            ty: input.parse()?,
-            _eq: input.parse()?,
-            default_expr: input.parse()?,
+            name,
+            _colon: colon,
+            ty,
+            default_expr,
         })
     }
 }
@@ -43,26 +51,26 @@ pub fn config_builder_impl(input: TokenStream) -> TokenStream {
 
     let struct_name = format_ident!("Config", span = Span::call_site());
 
-    // Generate struct fields and default initializers
-    let field_idents: Vec<Ident> = fields.iter().map(|f| f.name.clone()).collect();
-    let field_types: Vec<Type> = fields.iter().map(|f| f.ty.clone()).collect();
-    let field_defaults: Vec<Expr> = fields.iter().map(|f| f.default_expr.clone()).collect();
+    let field_declarations = fields.iter().map(|field| {
+        let Field {
+            name,
+            ty,
+            default_expr,
+            ..
+        } = field;
+        let default = default_expr
+            .as_ref()
+            .map(|expr| quote!(= #expr))
+            .unwrap_or_default();
+        quote!(#name: #ty #default,)
+    });
 
     let expanded = quote! {
         static CONFIG: std::sync::LazyLock<Config> = std::sync::LazyLock::new(|| get_config::<Config>(env!("CARGO_PKG_NAME").to_string()));
 
         #[freezable_trait::freezable]
         struct #struct_name {
-            #( #field_idents: #field_types, )*
-        }
-
-        impl ::core::default::Default for #struct_name {
-            fn default() -> Self {
-                Self {
-                    #( #field_idents: #field_defaults, )*
-                    _unknown_fields: [].into()
-                }
-            }
+            #( #field_declarations )*
         }
     };
 
