@@ -1,5 +1,6 @@
 use proc_macro::TokenStream;
 use proc_macro2::Span;
+use proc_macro_crate::{crate_name, FoundCrate};
 use quote::{format_ident, quote};
 use std::hash::{Hash, Hasher};
 use syn::{
@@ -179,6 +180,19 @@ pub fn config_builder_impl(input: TokenStream) -> TokenStream {
         return error.to_compile_error().into();
     }
 
+    let configurator_path = match crate_name("toml-configurator") {
+        Ok(FoundCrate::Itself) => quote!(crate),
+        Ok(FoundCrate::Name(name)) => {
+            let name = Ident::new(&name, Span::call_site());
+            quote!(::#name)
+        }
+        Err(error) => {
+            return syn::Error::new(Span::call_site(), error.to_string())
+                .to_compile_error()
+                .into();
+        }
+    };
+
     let struct_name = format_ident!("Config", span = Span::call_site());
     let mut generated_sections = Vec::new();
     let mut field_declarations = Vec::new();
@@ -201,7 +215,7 @@ pub fn config_builder_impl(input: TokenStream) -> TokenStream {
     }
 
     let expanded = quote! {
-        static CONFIG: std::sync::LazyLock<Config> = std::sync::LazyLock::new(|| get_config::<Config>(env!("CARGO_PKG_NAME").to_string()));
+        static CONFIG: std::sync::LazyLock<Config> = std::sync::LazyLock::new(|| #configurator_path::get_config::<Config>(env!("CARGO_PKG_NAME").to_string()));
 
         mod #module_name {
             use super::*;
