@@ -104,7 +104,7 @@ fn validate_sections(
     Ok(())
 }
 
-fn field_declaration(field: &Field) -> proc_macro2::TokenStream {
+fn field_declaration(field: &Field, visible_to_parent: bool) -> proc_macro2::TokenStream {
     let Field {
         name,
         ty,
@@ -114,7 +114,12 @@ fn field_declaration(field: &Field) -> proc_macro2::TokenStream {
         .as_ref()
         .map(|expr| quote!(#[default(#expr)]))
         .unwrap_or_default();
-    quote!(#default #name: #ty,)
+    let visibility = if visible_to_parent {
+        quote!(pub(super))
+    } else {
+        quote!()
+    };
+    quote!(#default #visibility #name: #ty,)
 }
 
 fn generate_section(
@@ -135,7 +140,7 @@ fn generate_section(
 
     for member in &section.members {
         match member {
-            Member::Field(field) => declarations.push(field_declaration(field)),
+            Member::Field(field) => declarations.push(field_declaration(field, true)),
             Member::Section(nested) => {
                 declarations.push(generate_section(
                     nested,
@@ -159,7 +164,7 @@ fn generate_section(
     if is_root_section {
         quote!(#name: #module_name::#section_type,)
     } else {
-        quote!(#name: super::#module_name::#section_type,)
+        quote!(pub(super) #name: super::#module_name::#section_type,)
     }
 }
 
@@ -200,7 +205,7 @@ pub fn config_builder_impl(input: TokenStream) -> TokenStream {
 
     for member in &members {
         match member {
-            Member::Field(field) => field_declarations.push(field_declaration(field)),
+            Member::Field(field) => field_declarations.push(field_declaration(field, false)),
             Member::Section(section) => {
                 let declaration = generate_section(
                     section,
